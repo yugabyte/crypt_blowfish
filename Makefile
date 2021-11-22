@@ -14,13 +14,13 @@
 # See crypt_blowfish.c for more information.
 #
 
-CC = gcc
+CC ?= gcc
 AS = $(CC)
 LD = $(CC)
 RM = rm -f
-CFLAGS = -fPIC -W -Wall -Wbad-function-cast -Wcast-align -Wcast-qual -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wundef -Wpointer-arith -O2 -fomit-frame-pointer -funroll-loops
-ASFLAGS = -c
-LDFLAGS = -s
+CFLAGS := $(CFLAGS) -fPIC -W -Wall -Wbad-function-cast -Wcast-align -Wcast-qual -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wundef -Wpointer-arith -O2 -fomit-frame-pointer -funroll-loops
+ASFLAGS := -c $(ASFLAGS)
+LDFLAGS := -s $(LDFLAGS)
 
 BLOWFISH_OBJS = \
 	crypt_blowfish.o x86.o
