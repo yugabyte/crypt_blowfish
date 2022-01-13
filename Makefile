@@ -92,4 +92,4 @@ $(static_lib):
 	ar r $@ $(CRYPT_OBJS)
 
 $(shared_lib):
-	$(CC) -shared -o $@ $(CRYPT_OBJS)
+	$(CC) -shared -o $@ $(CRYPT_OBJS) $(LDFLAGS)
