@@ -22,6 +22,18 @@ CFLAGS := $(CFLAGS) -fPIC -W -Wall -Wbad-function-cast -Wcast-align -Wcast-qual 
 ASFLAGS := -c $(ASFLAGS)
 LDFLAGS := -s $(LDFLAGS)
 
+uname_S := $(shell uname -s)
+ifeq ($(uname_S), Darwin)
+	dylib_extension = dylib
+else ifeq ($(uname_S), Linux)
+	dylib_extension = so
+else
+$(error Unsupported operating system: $(uname_S), cannot determine shared library extension)
+endif
+
+shared_lib = libcrypt_blowfish.$(dylib_extension)
+static_lib = libcrypt_blowfish.a
+
 BLOWFISH_OBJS = \
 	crypt_blowfish.o x86.o
 
@@ -38,7 +50,7 @@ EXTRA_MANS = \
 	crypt_r.3 crypt_rn.3 crypt_ra.3 \
 	crypt_gensalt.3 crypt_gensalt_rn.3 crypt_gensalt_ra.3
 
-all: $(CRYPT_OBJS) man
+all: $(CRYPT_OBJS) man libcrypt_blowfish.a $(shared_lib)
 
 check: crypt_test
 	./crypt_test
@@ -53,7 +65,7 @@ check_threads: crypt_test_threads
 	./crypt_test_threads
 
 crypt_test_threads: $(TEST_THREADS_OBJS)
-	$(LD) $(LDFLAGS) $(TEST_THREADS_OBJS) -lpthread -o $@
+	$(LD) $(LDFLAGS) $(TEST_THREADS_OBJS) -L. -lcrypt_blowfish -lpthread -o $@
 
 crypt_test_threads.o: wrapper.c ow-crypt.h crypt_blowfish.h crypt_gensalt.h
 	$(CC) -c $(CFLAGS) wrapper.c -DTEST -DTEST_THREADS=4 -o $@
@@ -74,4 +86,10 @@ wrapper.o: crypt.h ow-crypt.h crypt_blowfish.h crypt_gensalt.h
 	$(AS) $(ASFLAGS) $*.S
 
 clean:
-	$(RM) crypt_test crypt_test_threads *.o $(EXTRA_MANS) core
+	$(RM) crypt_test crypt_test_threads *.o $(EXTRA_MANS) core core.* $(shared_lib) $(static_lib)
+
+$(static_lib):
+	ar r $@ $(CRYPT_OBJS)
+
+$(shared_lib):
+	$(CC) -shared -o $@ $(CRYPT_OBJS)
